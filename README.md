@@ -1,4 +1,3 @@
-# Paradigms_SP25_Course_Project
 # About The Project
 
 Here's a blank template for your group to use.

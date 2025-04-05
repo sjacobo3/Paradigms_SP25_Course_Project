@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class CampusMartConfig(AppConfig):
+class CampusmartConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'campus_mart'
+    name = 'campusmart'

@@ -1,6 +1,29 @@
-{% extends "campusmart/base.html" %}
-{% block title %}Index{% endblock %}
+<!-- prettier-ignore -->
+
+{% extends "campusmart/base.html" %} 
+
+{% load static %} 
+
+{% block title %}Index{% endblock %} 
+
 {% block content %}
-    <p> {{ course }} {{ semester }} </p>
-    <p>This is the index.</p>
+<p>{{ course }} {{ semester }}</p>
+
+<div
+  class="container d-flex flex-column justify-content-center align-items-center"
+  style="height: 80vh"
+>
+  <img
+    src="{% static 'campusmart/campusmart_logo.png' %}"
+    alt="CampusMart Logo"
+    width="600"
+    class="mb-4"
+  />
+  <h1 class="mb-3">Welcome to CampusMart</h1>
+  <p class="lead mb-4">Your trusted college marketplace</p>
+
+  <a href="{% url 'campusmart:login' %}" class="btn btn-primary btn-lg">
+    Start with CampusMart
+  </a>
+</div>
 {% endblock %}

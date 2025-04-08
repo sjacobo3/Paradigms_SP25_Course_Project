@@ -11,8 +11,15 @@ urlpatterns = [
     # /campusmart/login
     path('login/', views.login, name='login'),
     # /campusmart/logout
-    path('logout/', views.logout, name='logout')
-    
+    path('logout/', views.logout, name='logout'),
+    # /campusmart/dashboard
+    path('dashboard/', views.dashboard, name='dashboard'), 
+    # /campusmart/create
+    path('create_listing/', views.create_listing, name='create_listing'),
+    # /campusmart/update
+    path('update_listing/', views.update_listing, name='update_listing'),
+    # /campusmart/delete
+    path('delete_listing/', views.delete_listing, name='delete_listing'),
 ]
 
     

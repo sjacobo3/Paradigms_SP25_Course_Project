@@ -16,10 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from campusmart import views
 
 urlpatterns = [
+    # landing page
+    path('', views.index, name='index'),  
     # /admin/
     path('admin/', admin.site.urls),
     # /campusmart/
-    path('campusmart/', include("campusmart.urls"))
+    path('campusmart/', include("campusmart.urls")),
 ]

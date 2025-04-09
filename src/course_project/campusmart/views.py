@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from .models import Listing
+from .models import Listing, Conversation, ConversationMessage
 from django.contrib import messages
 from datetime import datetime
 from django.utils import timezone
@@ -175,8 +175,13 @@ def listing_all(request):
     per_page = 20
     start = (page-1) * per_page
     end = start + per_page
+
+    query = request.GET.get('query', '')
+    if query:
+        listings = Listing.objects.filter(title__icontains=query).filter(description__icontains=query)
+    else:
+            listings = Listing.objects.filter(status='Available')
     
-    listings = Listing.objects.filter(status='Available')
     page_listings = listings[start:end]
     total = listings.count()
     total_pages = (total + per_page - 1) // per_page  # round up to get number of pages
@@ -184,6 +189,7 @@ def listing_all(request):
     page_range = range(1, total_pages + 1)
 
     return render(request, 'campusmart/listing_all.html', {
+        'query': query,
         'listings':page_listings,
         'page':page,
         'total_pages':total_pages,
@@ -194,4 +200,67 @@ def detail(request, pk):
     listing = get_object_or_404(Listing, pk=pk)
     return render(request, 'campusmart/listing_detail.html', {
         'listing':listing,
+    })
+
+@login_required
+def conversation_new(request, listing_id):
+    listing = get_object_or_404(Listing, id=listing_id)
+
+    # check if conversation exists
+    conversations = Conversation.objects.filter(listing=listing).filter(members__in=[request.user.id])
+    if conversations:
+        return redirect('campusmart:inbox')      # redirect to messages page
+
+    # create conversation, if none exist
+    if request.method == 'POST':
+        new_conversation = Conversation.objects.create(listing=listing)
+        new_conversation.members.add(request.user)
+        new_conversation.members.add(listing.created_by)
+
+        # create message        
+        message_content = request.POST.get('message')
+        if message_content:
+            new_message = ConversationMessage.objects.create(
+                conversation=new_conversation,
+                content=message_content,
+                created_by=request.user,
+            )
+            new_message.save()
+
+        # redirect to inbox after sending message
+        return redirect('campusmart:inbox')
+    
+    return render(request, 'campusmart/conversation_new.html', {
+        'listing':listing,
+    })
+
+@login_required
+def conversation_detail(request, conversation_id):
+    conversation = get_object_or_404(Conversation, id=conversation_id)
+
+    # get all messages for conversation
+    messages = ConversationMessage.objects.filter(conversation=conversation).order_by('created_at')
+
+    # if user sends message in conversation_detail
+    if request.method == 'POST':
+        message_content = request.POST.get('message')
+        if message_content:
+            new_message = ConversationMessage.objects.create(
+                conversation=conversation,
+                content=message_content,
+                created_by=request.user,
+            )
+            new_message.save()
+            return redirect('campusmart:conversation_detail', conversation_id=conversation.id)
+
+    return render(request, 'campusmart/conversation_detail.html', {
+        'conversation':conversation,
+        'messages':messages,
+    })
+
+@login_required
+def inbox(request):
+    conversations = Conversation.objects.filter(members__in=[request.user.id])
+    return render(request, 'campusmart/inbox.html', {
+        'conversations':conversations,
     })

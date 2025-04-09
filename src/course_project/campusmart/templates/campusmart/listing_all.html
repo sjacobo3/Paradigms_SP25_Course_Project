@@ -2,20 +2,32 @@
 {% block content %}
 
 <h1>Available items</h1>
-<div class="row">
-    {% for listing in listings %}
-        <div class="col">
-            <a href="{% url 'campusmart:detail' listing.id %}" class="card-link">
-                <div class="card">
-                    <img src="{{ listing.photo.url }}" class="card-img-top" alt="{{ listing.title }}">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ listing.title }}</h5>
-                        <p class="card-text">${{ listing.price }}</p>
-                    </div>
+
+<div class="pb-6 grid grid-cols-3 gap-4">
+    <div class="col-span-1">
+        <form method="get" action="{% url 'campusmart:listing_all' %}">
+            <input name="query" class="w-full py-4 px-6 rounded-xl" type="text" value="{{ query }}" placeholder="search">
+            <button type="button" class="btn btn-primary">Search</button>
+        </form>
+    </div>
+
+    <div class="col-span-3">
+        <div class="grid grid-cols-3 gap-3"
+            {% for listing in listings %}
+                <div>
+                    <a href="{% url 'campusmart:detail' listing.id %}" class="card-link">
+                        <div class="card">
+                            <img src="{{ listing.photo.url }}" class="card-img-top" alt="{{ listing.title }}">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ listing.title }}</h5>
+                                <p class="card-text">${{ listing.price }}</p>
+                            </div>
+                        </div>
+                    </a>
                 </div>
-            </a>
+            {% endfor %}
         </div>
-    {% endfor %}
+    </div>  
 </div>
 
 <!-- pagination -->
@@ -23,11 +35,11 @@
     <ul class="pagination justify-content-center">
         {% if page > 1 %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ page|add:'-1' }}">Previous</a>
+                <a class="page-link" href="?page={{ page|add:-1 }}">Previous</a>
             </li>
         {% endif %}
 
-        {% if page_range != 0 %}
+        {% if page_range %}
             {% for p in page_range %}
                 <li class="page-item {% if page == p %}active{% endif %}">
                     <a class="page-link" href="?page={{ p }}">{{ p }}</a>

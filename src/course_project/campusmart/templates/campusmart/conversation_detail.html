@@ -1,0 +1,24 @@
+{% extends "campusmart/base.html" %} 
+{% block content %}
+<h1>Conversations for: {{ conversation.listing.title }}</h1>
+
+<div class="space-y-6">
+    {% for message in messages %} 
+        <div class="bg-white p-4 rounded-lg mb-4 shadow-sm">
+            <strong>{{ message.created_by.username }}</strong> 
+            <span class="text-gray-500 text-sm">{{ message.created_at }}</span>
+            <p>{{ message.content }}</p>
+        </div>
+    {% endfor %}
+
+    <!-- send a new message -->
+    <form method="POST" action="{% url 'campusmart:conversation_detail' conversation.id %}">
+        {% csrf_token %}
+        <div class="mb-4">
+            <label for="message" class="block text-sm">Your Message</label>
+            <textarea id="message" name="message" class="w-full p-2 border rounded" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Send</button>
+    </form>
+</div>
+{% endblock %}

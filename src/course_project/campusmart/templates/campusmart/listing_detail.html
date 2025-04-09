@@ -12,7 +12,10 @@
             <strong>Description:</strong><br>{{ listing.description }}
         </p>
 
-        <button type="button" class="btn btn-primary">Contact Seller</button>
+        <!-- if user logged in didnt create listing, has options to message seller -->
+        {% if request.user != listing.created_by %}
+            <a href="{% url 'campusmart:conversation_new' listing.id %}" class="btn btn-primary">Contact Seller</a>
+        {% endif %}
         
         <!-- if user logged in created listing, has options to update or delete -->
         {% if request.user == listing.created_by %}

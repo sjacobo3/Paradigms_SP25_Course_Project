@@ -1,0 +1,46 @@
+{% extends "campusmart/base.html" %} 
+{% block content %}
+
+<h1>Available items</h1>
+<div class="row">
+    {% for listing in listings %}
+        <div class="col">
+            <a href="{% url 'campusmart:detail' listing.id %}" class="card-link">
+                <div class="card">
+                    <img src="{{ listing.photo.url }}" class="card-img-top" alt="{{ listing.title }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ listing.title }}</h5>
+                        <p class="card-text">${{ listing.price }}</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- pagination -->
+<nav aria-label="Pagination">
+    <ul class="pagination justify-content-center">
+        {% if page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page|add:'-1' }}">Previous</a>
+            </li>
+        {% endif %}
+
+        {% if page_range != 0 %}
+            {% for p in page_range %}
+                <li class="page-item {% if page == p %}active{% endif %}">
+                    <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                </li>
+            {% endfor %}
+        {% endif %}
+
+        {% if page < total_pages %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page|add:'1' }}">Next</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+
+{% endblock %}

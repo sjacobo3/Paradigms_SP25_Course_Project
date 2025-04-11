@@ -11,26 +11,24 @@
         </form>
     </div>
 
-    <div class="col-span-3">
-        <div class="grid grid-cols-3 gap-3"></div>
+    <div class="row">
+        <div class="col-sm-6"></div>
             <!-- {% load static %} -->
             {% for listing in listings %}
                 <div>
-                    <a href="{% url 'campusmart:detail' listing.id %}" class="card-link">
-                        <div class="card">
-                            <center>
-                                <img 
-                                    src="{{ listing.photo.url }}" 
-                                    class="img-fluid" 
-                                    alt="Listing Photo"
-                                    width="200px"
-                                    height="auto"
-                                >
-                            </center>
-                            <div class="card-body">
-                                <h5 class="card-title">{{ listing.title }}</h5>
-                                <p class="card-text">${{ listing.price }}</p>
-                            </div>
+                    <a class="card" href="{% url 'campusmart:detail' listing.id %}">
+                        <center>
+                            <img 
+                                src="{{ listing.photo.url }}" 
+                                class="img-fluid" 
+                                alt="Listing Photo"
+                                width="200px"
+                                height="auto"
+                            >
+                        </center>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ listing.title }}</h5>
+                            <p class="card-text">${{ listing.price }}</p>
                         </div>
                     </a>
                 </div>

@@ -17,7 +17,7 @@ def index(request):
 def register(request):
     if request.user.is_authenticated:
         messages.error(request, f'You are already logged in as {request.user.first_name}. Logout first to switch account.')
-        return HttpResponseRedirect(reverse('campusmart:dashboard'))
+        return HttpResponseRedirect(reverse('campusmart:listing_all'))
     if request.method == "POST":
         name = request.POST["name"]
         email = request.POST["email"]
@@ -59,7 +59,7 @@ def login(request):
 
         if user is not None:
             login_user(request, user)  # django's built-in login function
-            return HttpResponseRedirect(reverse('campusmart:listing_all'))  # redirect to the dashboard or wherever appropriate
+            return HttpResponseRedirect(reverse('campusmart:listing_all'))  # redirect to the page of all listings
         else:
             messages.error(request, "The username/password combination does not match our records.")
 
@@ -88,7 +88,7 @@ def create_listing(request):
         try:
             price = float(price)
         except ValueError:
-            message.error(request, "Provide a valid price.")
+            messages.error(request, "Provide a valid price.")
             return redirect("campusmart:create_listing")
 
         # Reset daily counter
@@ -147,7 +147,7 @@ def update_listing(request, listing_id):
         try:
             price = float(price)
         except ValueError:
-            message.error(request, "Provide a valid price.")
+            messages.error(request, "Provide a valid price.")
             return redirect("campusmart:update_listing", listing_id=listing_id)
 
         # Update fields

@@ -6,63 +6,69 @@ from .models import Listing, Conversation, ConversationMessage
 from django.contrib import messages
 from datetime import datetime
 from django.utils import timezone
-from django.contrib.auth import authenticate, login as django_login, logout as auth_logout
+from django.contrib.auth import authenticate as authenticate_user, login as login_user, logout as logout_user
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 
 # Create your views here.
 def index(request):
-    context = {
-        "course": "CSE-30332",
-        "semester": "Spring 2024",
-    }
-    return render(request, 'campusmart/index.html', context)
+    return render(request, 'campusmart/index.html')
 
 def register(request):
+    if request.user.is_authenticated:
+        messages.error(request, f'You are already logged in as {request.user.first_name}. Logout first to switch account.')
+        return HttpResponseRedirect(reverse('campusmart:dashboard'))
     if request.method == "POST":
         name = request.POST["name"]
         email = request.POST["email"]
         username = request.POST["username"]
         password = request.POST["password"]
 
+        if not name or not username or not password or not email:
+            messages.error(request, "Name, Username, Password, and Email are required.")
+            return HttpResponseRedirect(reverse('campusmart:register'))
+
         # Create user
         try:
             # create the user with the built-in model
             user = User.objects.create_user(username=username, email=email, password=password)
+            user.first_name = name
+            user.full_clean()
             user.save()
 
             # automatically log the user in after registration
-            django_login(request, user)
-            
-            # Redirect to dashboard after successful registration
-            messages.success(request, "Registration successful! You are now logged in.")
-            return redirect('campusmart:listing_all')  # Or wherever you want the user to go after logging in
+            login_user(request, user)
+            return HttpResponseRedirect(reverse('campusmart:listing_all'))
+        except ValidationError as ve:
+            messages.error(request, ve.message_dict)
+            return HttpResponseRedirect(reverse('campusmart:register'))
         except Exception as e:
-            messages.error(request, f"Error: {str(e)}")
-            return redirect('campusmart:register')
-
-    return render(request, 'campusmart/register.html')    
+            messages.error(request, str(e))
+            return HttpResponseRedirect(reverse('campusmart:register'))
+    return render(request, 'campusmart/register.html')
 
 def login(request):
+    if request.user.is_authenticated:
+        messages.error(request, f'You are already logged in as {request.user.first_name}. Logout first to switch account.')
+        return HttpResponseRedirect(reverse('campusmart:listing_all'))
     errors = None
     if request.method == "POST":
         uname = request.POST["username"]
         pwd = request.POST["password"]
-        user = authenticate(request, username=uname, password=pwd)
+        user = authenticate_user(request, username=uname, password=pwd)
 
         if user is not None:
-            django_login(request, user)  # django's built-in login function
-            return redirect("campusmart:listing_all")  # redirect to the dashboard or wherever appropriate
+            login_user(request, user)  # django's built-in login function
+            return HttpResponseRedirect(reverse('campusmart:listing_all'))  # redirect to the dashboard or wherever appropriate
         else:
-            errors = [('Error', "The username/password combination does not match our records.")]
-            messages.error(request, "Invalid username or password.")
+            messages.error(request, "The username/password combination does not match our records.")
 
-    return render(request, 'campusmart/login.html', {'errors': errors})
+    return render(request, 'campusmart/login.html')
 
 def logout(request):
     # remove the logged-in user information
-    auth_logout(request)
-    return HttpResponseRedirect(reverse("campusmart:login"))
+    logout_user(request)
+    return HttpResponseRedirect(reverse("campusmart:index"))
 
 @login_required
 def create_listing(request):

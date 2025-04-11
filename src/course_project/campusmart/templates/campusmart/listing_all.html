@@ -12,12 +12,21 @@
     </div>
 
     <div class="col-span-3">
-        <div class="grid grid-cols-3 gap-3"
+        <div class="grid grid-cols-3 gap-3"></div>
+            <!-- {% load static %} -->
             {% for listing in listings %}
                 <div>
                     <a href="{% url 'campusmart:detail' listing.id %}" class="card-link">
                         <div class="card">
-                            <img src="{{ listing.photo.url }}" class="card-img-top" alt="{{ listing.title }}">
+                            <center>
+                                <img 
+                                    src="{{ listing.photo.url }}" 
+                                    class="img-fluid" 
+                                    alt="Listing Photo"
+                                    width="200px"
+                                    height="auto"
+                                >
+                            </center>
                             <div class="card-body">
                                 <h5 class="card-title">{{ listing.title }}</h5>
                                 <p class="card-text">${{ listing.price }}</p>

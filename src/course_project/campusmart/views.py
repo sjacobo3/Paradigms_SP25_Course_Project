@@ -19,7 +19,7 @@ def index(request):
 def register(request):
     if request.user.is_authenticated:
         messages.error(request, f'You are already logged in as {request.user.first_name}. Logout first to switch account.')
-        return HttpResponseRedirect(reverse('campusmart:dashboard'))
+        return HttpResponseRedirect(reverse('campusmart:listing_all'))
     if request.method == "POST":
         name = request.POST["name"]
         email = request.POST["email"]
@@ -63,7 +63,7 @@ def login(request):
 
         if user is not None:
             login_user(request, user)  # django's built-in login function
-            return HttpResponseRedirect(reverse('campusmart:listing_all'))  # redirect to the dashboard or wherever appropriate
+            return HttpResponseRedirect(reverse('campusmart:listing_all'))  # redirect to the page of all listings
         else:
             messages.error(request, "The username/password combination does not match our records.")
     return render(request, 'campusmart/login.html')

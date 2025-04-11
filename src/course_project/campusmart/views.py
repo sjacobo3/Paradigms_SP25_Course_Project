@@ -1,12 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.hashers import check_password, make_password
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from .models import User, Listing
+from .models import Listing, Conversation, ConversationMessage
 from django.contrib import messages
 from datetime import datetime
 from django.utils import timezone
+from django.contrib.auth import authenticate, login as django_login, logout as auth_logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 
 # Create your views here.
 def index(request):
@@ -16,65 +18,53 @@ def index(request):
     }
     return render(request, 'campusmart/index.html', context)
 
-# register, login, logout from course repo
-# https://stackoverflow.com/a/43793754
 def register(request):
-    if request.POST:
-        # Create a model instance and populate it with data from the request
+    if request.method == "POST":
         name = request.POST["name"]
-        uname = request.POST["username"]
-        pwd = request.POST["password"]
         email = request.POST["email"]
+        username = request.POST["username"]
+        password = request.POST["password"]
 
-        user = User(name=name, username=uname, password=pwd, email=email)
-
+        # Create user
         try:
-            user.full_clean()
-            user.password = make_password(pwd)  # encrypts
-            # if we reach here, the validation succeeded
-            user.save()  # saves on the db
-            # redirect to the login page
-            return HttpResponseRedirect(reverse('campusmart:index'))
-        except ValidationError as e:
-            return render(request, template_name='campusmart/register.html', context={'error_message': e.message_dict})
-    return render(request, 'campusmart/register.html')
-    
+            # create the user with the built-in model
+            user = User.objects.create_user(username=username, email=email, password=password)
+            user.save()
+
+            # automatically log the user in after registration
+            django_login(request, user)
+            
+            # Redirect to dashboard after successful registration
+            messages.success(request, "Registration successful! You are now logged in.")
+            return redirect('campusmart:listing_all')  # Or wherever you want the user to go after logging in
+        except Exception as e:
+            messages.error(request, f"Error: {str(e)}")
+            return redirect('campusmart:register')
+
+    return render(request, 'campusmart/register.html')    
+
 def login(request):
     errors = None
-    if request.POST:
-        # Create a model instance and populate it with data from the request
+    if request.method == "POST":
         uname = request.POST["username"]
         pwd = request.POST["password"]
-        user = User.objects.filter(username=uname)
+        user = authenticate(request, username=uname, password=pwd)
 
-        if len(user) > 0 and check_password(pwd, user[0].password):
-            # create a new session
-            request.session["user"] = uname
-            return redirect("campusmart:dashboard")  # ✅ redirect here
-            # return HttpResponseRedirect(reverse('campusmart:index'))
+        if user is not None:
+            django_login(request, user)  # django's built-in login function
+            return redirect("campusmart:listing_all")  # redirect to the dashboard or wherever appropriate
         else:
             errors = [('Error', "The username/password combination does not match our records.")]
+            messages.error(request, "Invalid username or password.")
 
     return render(request, 'campusmart/login.html', {'errors': errors})
 
 def logout(request):
     # remove the logged-in user information
-    del request.session["user"]
+    auth_logout(request)
     return HttpResponseRedirect(reverse("campusmart:login"))
 
-def dashboard(request):
-    # Get the username from session
-    username = request.session.get("user", None)
-    
-    # Optional: Get the full user object if needed
-    user = User.objects.filter(username=username).first()
-
-    listings = Listing.objects.all()
-    return render(request, "campusmart/dashboard.html", {
-        "listings": listings,
-        "user": user,
-    })
-
+@login_required
 def create_listing(request):
     if request.method == "POST":
         title = request.POST.get("title")
@@ -84,9 +74,16 @@ def create_listing(request):
         photo = request.FILES.get("photo")  
 
         # Check for missing fields
-        if not title or not description or not price or not condition or not photo:
+        if not all([title, description, price, condition, photo]):
             messages.error(request, "All fields are required.")
-            return redirect("create_listing")  
+            return redirect("campusmart:create_listing")  
+
+        # check if price is valid
+        try:
+            price = float(price)
+        except ValueError:
+            message.error(request, "Provide a valid price.")
+            return redirect("campusmart:create_listing")
 
         # Reset daily counter
         last_post_date = request.session.get("last_post_date")
@@ -100,10 +97,11 @@ def create_listing(request):
         daily_post_count = request.session.get("daily_post_count", 0)
         if daily_post_count >= 3:
             messages.error(request, "You have reached your daily limit of 3 listings.")
-            return redirect("dashboard")
+            return redirect("campusmart:listing_all")      # can redirect to buy more listing posts
 
         # If all fields are filled, save the listing
         listing = Listing(
+            created_by=request.user,
             title=title,
             description=description,
             price=price,
@@ -118,10 +116,11 @@ def create_listing(request):
         request.session["last_post_date"] = today_str
 
         messages.success(request, "Your listing has been posted successfully :)")
-        return redirect("dashboard")  # redirect to a dashboard or listing page
+        return redirect("campusmart:listing_all")  # redirect to listing page
 
     return render(request, "campusmart/create_listing.html")
     
+@login_required
 def update_listing(request, listing_id):
     listing = get_object_or_404(Listing, id=listing_id)
 
@@ -136,7 +135,14 @@ def update_listing(request, listing_id):
         # Validate fields
         if not all([title, description, price, condition, status]):
             messages.error(request, "All fields are required.")
-            return redirect("update_listing", listing_id=listing_id)
+            return redirect("campusmart:update_listing", listing_id=listing_id)
+        
+        # check if price is valid
+        try:
+            price = float(price)
+        except ValueError:
+            message.error(request, "Provide a valid price.")
+            return redirect("campusmart:update_listing", listing_id=listing_id)
 
         # Update fields
         listing.title = title
@@ -149,16 +155,112 @@ def update_listing(request, listing_id):
         listing.save()
 
         messages.success(request, "Listing updated successfully!")
-        return redirect("dashboard")
+        return redirect("campusmart:listing_all")
 
     return render(request, "campusmart/update_listing.html", {"listing": listing})
 
+@login_required
 def delete_listing(request, listing_id):
     listing = get_object_or_404(Listing, id=listing_id)
 
     if request.method == "POST":
         listing.delete()
         messages.success(request, "Listing deleted successfully.")
-        return redirect("dashboard")
+        return redirect("campusmart:listing_all")
 
     return render(request, "campusmart/delete_listing.html", {"listing": listing})
+
+def listing_all(request):
+    page = int(request.GET.get('page', 1))      # default page 1
+    per_page = 20
+    start = (page-1) * per_page
+    end = start + per_page
+
+    query = request.GET.get('query', '')
+    if query:
+        listings = Listing.objects.filter(title__icontains=query).filter(description__icontains=query)
+    else:
+            listings = Listing.objects.filter(status='Available')
+    
+    page_listings = listings[start:end]
+    total = listings.count()
+    total_pages = (total + per_page - 1) // per_page  # round up to get number of pages
+
+    page_range = range(1, total_pages + 1)
+
+    return render(request, 'campusmart/listing_all.html', {
+        'query': query,
+        'listings':page_listings,
+        'page':page,
+        'total_pages':total_pages,
+        'page_range':page_range,
+        })
+
+def detail(request, pk):
+    listing = get_object_or_404(Listing, pk=pk)
+    return render(request, 'campusmart/listing_detail.html', {
+        'listing':listing,
+    })
+
+@login_required
+def conversation_new(request, listing_id):
+    listing = get_object_or_404(Listing, id=listing_id)
+
+    # check if conversation exists
+    conversations = Conversation.objects.filter(listing=listing).filter(members__in=[request.user.id])
+    if conversations:
+        return redirect('campusmart:inbox')      # redirect to messages page
+
+    # create conversation, if none exist
+    if request.method == 'POST':
+        new_conversation = Conversation.objects.create(listing=listing)
+        new_conversation.members.add(request.user)
+        new_conversation.members.add(listing.created_by)
+
+        # create message        
+        message_content = request.POST.get('message')
+        if message_content:
+            new_message = ConversationMessage.objects.create(
+                conversation=new_conversation,
+                content=message_content,
+                created_by=request.user,
+            )
+            new_message.save()
+
+        # redirect to inbox after sending message
+        return redirect('campusmart:inbox')
+    
+    return render(request, 'campusmart/conversation_new.html', {
+        'listing':listing,
+    })
+
+@login_required
+def conversation_detail(request, conversation_id):
+    conversation = get_object_or_404(Conversation, id=conversation_id)
+
+    # get all messages for conversation
+    messages = ConversationMessage.objects.filter(conversation=conversation).order_by('created_at')
+
+    # if user sends message in conversation_detail
+    if request.method == 'POST':
+        message_content = request.POST.get('message')
+        if message_content:
+            new_message = ConversationMessage.objects.create(
+                conversation=conversation,
+                content=message_content,
+                created_by=request.user,
+            )
+            new_message.save()
+            return redirect('campusmart:conversation_detail', conversation_id=conversation.id)
+
+    return render(request, 'campusmart/conversation_detail.html', {
+        'conversation':conversation,
+        'messages':messages,
+    })
+
+@login_required
+def inbox(request):
+    conversations = Conversation.objects.filter(members__in=[request.user.id])
+    return render(request, 'campusmart/inbox.html', {
+        'conversations':conversations,
+    })

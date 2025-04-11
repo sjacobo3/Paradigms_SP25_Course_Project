@@ -1,22 +1,18 @@
-<!-- from course repo -->
 {% extends "campusmart/base.html" %}
 {% block title %}Register{% endblock %}
 {% block content %}
     <form action="{% url 'campusmart:register' %}" method="post">
         {% csrf_token %}
         <fieldset>
-            <legend>
-                <h1>Register</h1>
-            </legend>
-                <input type="text" name="name" id="name">
-                <label for="name">Name</label><br>
-                <input type="text" name="username" id="username">
-                <label for="username">Username</label><br>
-                <input type="email" name="email" id="email">
-                <label for="email">Email</label><br>
-                <input type="password" name="password" id="password">
-                <label for="password">Password</label><br>
+            <legend><h1>Register</h1></legend>
+            <input type="name" name="name" id="name" placeholder="Name" required><br>
+            <input type="email" name="email" id="email" placeholder="Email" required><br>
+            <input type="text" name="username" id="username" placeholder="Username" required><br>
+            <input type="password" name="password" id="password" placeholder="Password" required><br>
         </fieldset>
         <input type="submit" value="Register">
     </form>
+    <div>
+        <a href="{% url 'campusmart:login' %}">Already have an account?</a>
+    </div>
 {% endblock %}

@@ -1,0 +1,12 @@
+{% extends "campusmart/base.html" %} 
+{% block content %}
+<h1>New Message</h1>
+<form method="POST" action="{% url 'campusmart:conversation_new' listing.id %}">
+    {% csrf_token %} 
+    <div class="mb-4">
+        <label for="message" class="block text-sm">Your Message</label>
+        <textarea id="message" name="message" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Send</button>
+</form>
+{% endblock %}

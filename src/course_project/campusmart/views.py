@@ -82,7 +82,7 @@ def create_listing(request):
         try:
             price = float(price)
         except ValueError:
-            message.error(request, "Provide a valid price.")
+            messages.error(request, "Provide a valid price.")
             return redirect("campusmart:create_listing")
 
         # Reset daily counter
@@ -141,7 +141,7 @@ def update_listing(request, listing_id):
         try:
             price = float(price)
         except ValueError:
-            message.error(request, "Provide a valid price.")
+            messages.error(request, "Provide a valid price.")
             return redirect("campusmart:update_listing", listing_id=listing_id)
 
         # Update fields

@@ -1,5 +1,3 @@
-<!-- prettier-ignore -->
-
 {% extends "campusmart/base.html" %} 
 
 {% load static %} 
@@ -23,7 +21,11 @@
   <p class="lead mb-4">Your trusted college marketplace</p>
 
   <a href="{% url 'campusmart:login' %}" class="btn btn-primary btn-lg">
-    Start with CampusMart
+    Login with CampusMart
+  </a>
+  <br/>
+  <a href="{% url 'campusmart:register' %}" class="btn btn-primary btn-lg">
+    Register with CampusMart
   </a>
 </div>
 {% endblock %}

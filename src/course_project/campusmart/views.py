@@ -1,80 +1,81 @@
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate as authenticate_user, login as login_user, logout as logout_user
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.hashers import check_password, make_password
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from .models import User, Listing
+from .models import Listing
 from django.contrib import messages
-from datetime import datetime
 from django.utils import timezone
 
 # Create your views here.
 def index(request):
-    context = {
-        "course": "CSE-30332",
-        "semester": "Spring 2024",
-    }
-    return render(request, 'campusmart/index.html', context)
+    return render(request, 'campusmart/index.html')
 
-# register, login, logout from course repo
-# https://stackoverflow.com/a/43793754
 def register(request):
+    if request.user.is_authenticated:
+        messages.error(request, f'You are already logged in as {request.user.first_name}. Logout first to switch account.')
+        return HttpResponseRedirect(reverse('campusmart:dashboard'))
     if request.POST:
-        # Create a model instance and populate it with data from the request
+        # populate the built-in User model with data from the request
         name = request.POST["name"]
-        uname = request.POST["username"]
-        pwd = request.POST["password"]
+        username = request.POST["username"]
+        password = request.POST["password"]
         email = request.POST["email"]
 
-        user = User(name=name, username=uname, password=pwd, email=email)
+        if not name or not username or not password or not email:
+            messages.error(request, "Name, Username, Password, and Email are required.")
+            return redirect("register")
 
         try:
+            user = User.objects.create_user(username, email, password) # encrypts the password as well
+            user.first_name = name
             user.full_clean()
-            user.password = make_password(pwd)  # encrypts
             # if we reach here, the validation succeeded
             user.save()  # saves on the db
-            # redirect to the login page
-            return HttpResponseRedirect(reverse('campusmart:index'))
-        except ValidationError as e:
-            return render(request, template_name='campusmart/register.html', context={'error_message': e.message_dict})
+            # redirect to the dashboard
+            return HttpResponseRedirect(reverse('campusmart:dashboard'))
+        except ValidationError as ve:
+            messages.error(request, ve.message_dict)
+            return HttpResponseRedirect(reverse('campusmart:register'))
+        except Exception as e:
+            messages.error(request, str(e))
+            return HttpResponseRedirect(reverse('campusmart:register'))
     return render(request, 'campusmart/register.html')
     
 def login(request):
+    if request.user.is_authenticated:
+        messages.error(request, f'You are already logged in as {request.user.first_name}. Logout first to switch account.')
+        return HttpResponseRedirect(reverse('campusmart:dashboard'))
     errors = None
     if request.POST:
         # Create a model instance and populate it with data from the request
-        uname = request.POST["username"]
-        pwd = request.POST["password"]
-        user = User.objects.filter(username=uname)
+        username = request.POST["username"]
+        password = request.POST["password"]
+        user = authenticate_user(request, username=username, password=password)
 
-        if len(user) > 0 and check_password(pwd, user[0].password):
-            # create a new session
-            request.session["user"] = uname
-            return redirect("campusmart:dashboard")  # ✅ redirect here
-            # return HttpResponseRedirect(reverse('campusmart:index'))
+        if user is not None:
+            login_user(request, user)
+            return HttpResponseRedirect(reverse('campusmart:dashboard'))
         else:
             errors = [('Error', "The username/password combination does not match our records.")]
 
     return render(request, 'campusmart/login.html', {'errors': errors})
 
 def logout(request):
-    # remove the logged-in user information
-    del request.session["user"]
-    return HttpResponseRedirect(reverse("campusmart:login"))
+    logout_user(request)
+    return HttpResponseRedirect(reverse("campusmart:index"))
 
+@login_required
 def dashboard(request):
-    # Get the username from session
-    username = request.session.get("user", None)
-    
-    # Optional: Get the full user object if needed
-    user = User.objects.filter(username=username).first()
-
     listings = Listing.objects.all()
     return render(request, "campusmart/dashboard.html", {
         "listings": listings,
-        "user": user,
+        # "user": user,
     })
 
+@login_required
 def create_listing(request):
     if request.method == "POST":
         title = request.POST.get("title")
@@ -121,7 +122,8 @@ def create_listing(request):
         return redirect("dashboard")  # redirect to a dashboard or listing page
 
     return render(request, "campusmart/create_listing.html")
-    
+
+@login_required   
 def update_listing(request, listing_id):
     listing = get_object_or_404(Listing, id=listing_id)
 
@@ -153,6 +155,7 @@ def update_listing(request, listing_id):
 
     return render(request, "campusmart/update_listing.html", {"listing": listing})
 
+@login_required
 def delete_listing(request, listing_id):
     listing = get_object_or_404(Listing, id=listing_id)
 

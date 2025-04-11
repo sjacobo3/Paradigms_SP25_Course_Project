@@ -1,17 +1,17 @@
-Project contributors (sorted alphabetically)
+Project contributors
 ============================================
 
-* **[Team Member 1](https://github.com/team-member-1-github)**
+* **[Samara Jacobo](https://github.com/sjacobo3)**
+
+  Feature 3.1: Contributed by rendering a preview of all the listings with the status available,
+  making each card clickable to see a detailed view of the listing details. 
+
+* **[Kaia Damian](https://github.com/team-member-2-github)**
 
   * ... contribution 1 description ...
   * ... contribution 2 description ...
 
-* **[Team Member 2](https://github.com/team-member-2-github)**
-
-  * ... contribution 1 description ...
-  * ... contribution 2 description ...
-
-* **[Team Member 3](https://github.com/team-member-2-github)**
+* **[Swindar Zhou](https://github.com/team-member-2-github)**
 
   * ... contribution 1 description ...
   * ... contribution 2 description ...

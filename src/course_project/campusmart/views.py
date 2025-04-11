@@ -10,9 +10,11 @@ from django.contrib.auth import authenticate as authenticate_user, login as logi
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 
+
 # Create your views here.
 def index(request):
     return render(request, 'campusmart/index.html')
+
 
 def register(request):
     if request.user.is_authenticated:
@@ -45,7 +47,9 @@ def register(request):
         except Exception as e:
             messages.error(request, str(e))
             return HttpResponseRedirect(reverse('campusmart:register'))
+
     return render(request, 'campusmart/register.html')
+
 
 def login(request):
     if request.user.is_authenticated:
@@ -62,21 +66,23 @@ def login(request):
             return HttpResponseRedirect(reverse('campusmart:listing_all'))  # redirect to the dashboard or wherever appropriate
         else:
             messages.error(request, "The username/password combination does not match our records.")
-
     return render(request, 'campusmart/login.html')
+
 
 def logout(request):
     # remove the logged-in user information
     logout_user(request)
+    
     return HttpResponseRedirect(reverse("campusmart:index"))
+
 
 @login_required
 def create_listing(request):
     if request.method == "POST":
         title = request.POST.get("title")
-        description = request.POST.get("description") 
-        price = request.POST.get("price") 
-        condition = request.POST.get("condition") 
+        description = request.POST.get("description")
+        price = request.POST.get("price")
+        condition = request.POST.get("condition")
         photo = request.FILES.get("photo")  
 
         # Check for missing fields
@@ -98,7 +104,7 @@ def create_listing(request):
         if last_post_date != today_str:
             request.session["daily_post_count"] = 0
             request.session["last_post_date"] = today_str
-        
+       
         # Check posting limit
         daily_post_count = request.session.get("daily_post_count", 0)
         if daily_post_count >= 3:
@@ -123,26 +129,27 @@ def create_listing(request):
 
         messages.success(request, "Your listing has been posted successfully :)")
         return redirect("campusmart:listing_all")  # redirect to listing page
-
-    return render(request, "campusmart/create_listing.html")
     
+    return render(request, "campusmart/create_listing.html")
+   
+
 @login_required
 def update_listing(request, listing_id):
     listing = get_object_or_404(Listing, id=listing_id)
 
     if request.method == "POST":
         title = request.POST.get("title")
-        description = request.POST.get("description") 
-        price = request.POST.get("price") 
-        condition = request.POST.get("condition") 
+        description = request.POST.get("description")
+        price = request.POST.get("price")
+        condition = request.POST.get("condition")
         status = request.POST.get("status")
-        photo = request.FILES.get("photo")   
+        photo = request.FILES.get("photo")  
 
         # Validate fields
         if not all([title, description, price, condition, status]):
             messages.error(request, "All fields are required.")
             return redirect("campusmart:update_listing", listing_id=listing_id)
-        
+       
         # check if price is valid
         try:
             price = float(price)
@@ -165,6 +172,7 @@ def update_listing(request, listing_id):
 
     return render(request, "campusmart/update_listing.html", {"listing": listing})
 
+
 @login_required
 def delete_listing(request, listing_id):
     listing = get_object_or_404(Listing, id=listing_id)
@@ -173,8 +181,9 @@ def delete_listing(request, listing_id):
         listing.delete()
         messages.success(request, "Listing deleted successfully.")
         return redirect("campusmart:listing_all")
-
+    
     return render(request, "campusmart/delete_listing.html", {"listing": listing})
+
 
 def listing_all(request):
     page = int(request.GET.get('page', 1))      # default page 1
@@ -184,10 +193,10 @@ def listing_all(request):
 
     query = request.GET.get('query', '')
     if query:
-        listings = Listing.objects.filter(title__icontains=query).filter(description__icontains=query)
+        listings = Listing.objects.filter(description__icontains=query)
     else:
             listings = Listing.objects.filter(status='Available')
-    
+   
     page_listings = listings[start:end]
     total = listings.count()
     total_pages = (total + per_page - 1) // per_page  # round up to get number of pages
@@ -202,11 +211,14 @@ def listing_all(request):
         'page_range':page_range,
         })
 
+
 def detail(request, pk):
     listing = get_object_or_404(Listing, pk=pk)
+
     return render(request, 'campusmart/listing_detail.html', {
         'listing':listing,
     })
+
 
 @login_required
 def conversation_new(request, listing_id):
@@ -235,10 +247,11 @@ def conversation_new(request, listing_id):
 
         # redirect to inbox after sending message
         return redirect('campusmart:inbox')
-    
+
     return render(request, 'campusmart/conversation_new.html', {
         'listing':listing,
     })
+
 
 @login_required
 def conversation_detail(request, conversation_id):
@@ -264,9 +277,11 @@ def conversation_detail(request, conversation_id):
         'messages':messages,
     })
 
+
 @login_required
 def inbox(request):
     conversations = Conversation.objects.filter(members__in=[request.user.id])
+    
     return render(request, 'campusmart/inbox.html', {
         'conversations':conversations,
     })

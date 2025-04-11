@@ -1,31 +1,32 @@
-{% extends "campusmart/base.html" %} 
+{% extends "campusmart/base.html" %}
 {% block content %}
-<div class="grid grid-cols-5 gap-6">
-    <div class="col-span-3">
-        <img src="{{ listing.photo.url }}" alt="{{ listing.title }}" style="width:400px">
-    </div>
-    <div class="col-span-2 p-6 bg-gray-100 rounded-xl">
-        <h1 class="mb-6 text-3xl">{{ listing.title }}</h1>
-        <p class="text-gray-500">Price: ${{ listing.price }}</p>
+<div class="contianer">
 
-        <p class="text-gray-700">
-            <strong>Description:</strong><br>{{ listing.description }}
-        </p>
+    <div class="row align-items-center">
+        <div class="col-6 col d-flex justify-content-center">
+            <img src="{{ listing.photo.url }}" alt="{{ listing.title }}">
+        </div>
+    
+        <div class="col-6">
+            <h1 class="mb-6 text-3xl">{{ listing.title }}</h1>
+            <p><strong>Price: </strong>${{ listing.price }}</p>
+            <p><strong>Condition: </strong>{{ listing.condition }}</p>
+            <p><strong>Seller: </strong>{{ listing.created_by }}</p>
+            <p><strong>Description:</strong><br>{{ listing.description }}</p>
 
-        <!-- if user logged in didnt create listing, has options to message seller -->
-        {% if request.user != listing.created_by %}
-            <a href="{% url 'campusmart:conversation_new' listing.id %}" class="btn btn-primary">Contact Seller</a>
-        {% endif %}
+            <!-- if user logged in didnt create listing, has options to message seller -->
+            {% if request.user != listing.created_by %}
+                <a href="{% url 'campusmart:conversation_new' listing.id %}" class="btn btn-primary">Contact Seller</a>
+            {% endif %}
         
-        <!-- if user logged in created listing, has options to update or delete -->
-        {% if request.user == listing.created_by %}
-            <div class="mt-4">
-                <a href="{% url 'campusmart:update_listing' listing.id %}" class="btn btn-warning">Update</a>
-                <a href="{% url 'campusmart:delete_listing' listing.id %}" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this listing?')">Delete</a>
-            </div>
-        {% endif %}
-
+            <!-- if user logged in created listing, has options to update or delete -->
+            {% if request.user == listing.created_by %}
+                <div class="mt-4">
+                    <a href="{% url 'campusmart:update_listing' listing.id %}" class="btn btn-warning">Update</a>
+                    <a href="{% url 'campusmart:delete_listing' listing.id %}" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this listing?')">Delete</a>
+                </div>
+            {% endif %}
+        </div>
     </div>
 </div>
-
 {% endblock %}

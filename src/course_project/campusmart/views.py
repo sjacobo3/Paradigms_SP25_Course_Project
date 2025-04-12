@@ -4,43 +4,48 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from .models import Listing, Conversation, ConversationMessage
 from django.contrib import messages
-from datetime import datetime
 from django.utils import timezone
 from django.contrib.auth import authenticate as authenticate_user, login as login_user, logout as logout_user
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 
-
 # Create your views here.
 def index(request):
+    ''' This function displays the landing page (index.html). '''
     return render(request, 'campusmart/index.html')
 
-
 def register(request):
+    ''' This function implements Feature 1.1: Create New User Profile '''
+    # if user is already logged in, reroute them to the listing page
     if request.user.is_authenticated:
-        messages.error(request, f'You are already logged in as {request.user.first_name}. Logout first to switch account.')
-        return HttpResponseRedirect(reverse('campusmart:dashboard'))
+        messages.error(request, f'You are already logged in as {request.user.username}. Logout first to switch account.')
+        return HttpResponseRedirect(reverse('campusmart:listing_all'))
+    
+    # retrieve data from the user's submission
     if request.method == "POST":
         name = request.POST["name"]
         email = request.POST["email"]
         username = request.POST["username"]
         password = request.POST["password"]
 
+        # error check: ensure all fields were filled in as well as unique username and email
         if not name or not username or not password or not email:
             messages.error(request, "Name, Username, Password, and Email are required.")
             return HttpResponseRedirect(reverse('campusmart:register'))
-
-        # Create user
+        if User.objects.filter(email=email).exists():
+            messages.error(request, f'Email {email} is already in use.')
+            return HttpResponseRedirect(reverse('campusmart:register'))
+        
         try:
-            # create the user with the built-in model
+            # create the user with the django built-in model
             user = User.objects.create_user(username=username, email=email, password=password)
-            user.first_name = name
-            user.full_clean()
+            user.first_name = name # first_name acts as the full name, as per edstem question
             user.save()
 
-            # automatically log the user in after registration
+            # automatically log the user in after registration and redirect to listing page
             login_user(request, user)
             return HttpResponseRedirect(reverse('campusmart:listing_all'))
+        # error check: return error messages and redirect to register again
         except ValidationError as ve:
             messages.error(request, ve.message_dict)
             return HttpResponseRedirect(reverse('campusmart:register'))
@@ -53,7 +58,7 @@ def register(request):
 
 def login(request):
     if request.user.is_authenticated:
-        messages.error(request, f'You are already logged in as {request.user.first_name}. Logout first to switch account.')
+        messages.error(request, f'You are already logged in as {request.user.username}. Logout first to switch account.')
         return HttpResponseRedirect(reverse('campusmart:listing_all'))
     errors = None
     if request.method == "POST":
@@ -62,8 +67,8 @@ def login(request):
         user = authenticate_user(request, username=uname, password=pwd)
 
         if user is not None:
-            login_user(request, user)  # django's built-in login function
-            return HttpResponseRedirect(reverse('campusmart:listing_all'))  # redirect to the dashboard or wherever appropriate
+            login_user(request, user)  
+            return HttpResponseRedirect(reverse('campusmart:listing_all'))  
         else:
             messages.error(request, "The username/password combination does not match our records.")
     return render(request, 'campusmart/login.html')
@@ -72,12 +77,13 @@ def login(request):
 def logout(request):
     # remove the logged-in user information
     logout_user(request)
-    
     return HttpResponseRedirect(reverse("campusmart:index"))
 
 
 @login_required
 def create_listing(request):
+    ''' This function implements Feature 2.1: Create Listings '''
+    # retrieve data from the user's listing
     if request.method == "POST":
         title = request.POST.get("title")
         description = request.POST.get("description")
@@ -85,7 +91,7 @@ def create_listing(request):
         condition = request.POST.get("condition")
         photo = request.FILES.get("photo")  
 
-        # Check for missing fields
+        # check for missing fields
         if not all([title, description, price, condition, photo]):
             messages.error(request, "All fields are required.")
             return redirect("campusmart:create_listing")  
@@ -97,7 +103,7 @@ def create_listing(request):
             messages.error(request, "Provide a valid price.")
             return redirect("campusmart:create_listing")
 
-        # Reset daily counter
+        # reset daily counter
         last_post_date = request.session.get("last_post_date")
         today_str = timezone.now().strftime("%Y-%m-%d")
 
@@ -105,13 +111,13 @@ def create_listing(request):
             request.session["daily_post_count"] = 0
             request.session["last_post_date"] = today_str
        
-        # Check posting limit
+        # check posting limit
         daily_post_count = request.session.get("daily_post_count", 0)
         if daily_post_count >= 3:
             messages.error(request, "You have reached your daily limit of 3 listings.")
             return redirect("campusmart:listing_all")      # can redirect to buy more listing posts
 
-        # If all fields are filled, save the listing
+        # if all fields are filled, save the listing
         listing = Listing(
             created_by=request.user,
             title=title,
@@ -123,7 +129,7 @@ def create_listing(request):
         )
         listing.save()  # save the new listing
 
-        # Update session tracking
+        # update session tracking
         request.session["daily_post_count"] = daily_post_count + 1
         request.session["last_post_date"] = today_str
 
@@ -186,16 +192,18 @@ def delete_listing(request, listing_id):
 
 
 def listing_all(request):
-    page = int(request.GET.get('page', 1))      # default page 1
+    ''' This function implements Feature 3.1 View all listings '''
+    # set initial variables, set up pagination for 20 products at a time
+    page = int(request.GET.get('page', 1))
     per_page = 20
     start = (page-1) * per_page
     end = start + per_page
 
-    query = request.GET.get('query', '')
+    query = request.GET.get('query', '') # used later for Feature 3.2
     if query:
         listings = Listing.objects.filter(description__icontains=query)
     else:
-            listings = Listing.objects.filter(status='Available')
+            listings = Listing.objects.filter(status='Available') # this is Feature 3.1, showing all available listings
    
     page_listings = listings[start:end]
     total = listings.count()
@@ -203,13 +211,14 @@ def listing_all(request):
 
     page_range = range(1, total_pages + 1)
 
+    # display listings page
     return render(request, 'campusmart/listing_all.html', {
         'query': query,
         'listings':page_listings,
         'page':page,
         'total_pages':total_pages,
         'page_range':page_range,
-        })
+    })
 
 
 def detail(request, pk):

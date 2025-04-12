@@ -19,9 +19,7 @@ urlpatterns = [
     # /campusmart/logout
     path('logout/', views.logout, name='logout'),
 
-    # /campusmart/dashboard
-    # path('dashboard/', views.dashboard, name='dashboard'), 
-    # /campusmart/create
+    # /campusmart/create_listing
     path('create_listing/', views.create_listing, name='create_listing'),
 
     # /campusmart/update

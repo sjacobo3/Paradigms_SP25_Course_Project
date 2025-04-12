@@ -1,18 +1,33 @@
+<!-- Feature 1.1: Register Page -->
 {% extends "campusmart/base.html" %}
 {% block title %}Register{% endblock %}
 {% block content %}
-    <form action="{% url 'campusmart:register' %}" method="post">
+    <form class="m-auto col-md-3" action="{% url 'campusmart:register' %}" method="post">
         {% csrf_token %}
         <fieldset>
             <legend><h1>Register</h1></legend>
-            <input type="name" name="name" id="name" placeholder="Name" required><br>
-            <input type="email" name="email" id="email" placeholder="Email" required><br>
-            <input type="text" name="username" id="username" placeholder="Username" required><br>
-            <input type="password" name="password" id="password" placeholder="Password" required><br>
+            <div class="form-floating">
+                <input class="form-control" type="name" name="name" id="name" placeholder="Name" required>
+                <label class="form-label" for="name">Name</label>
+            </div>
+            <div class="form-floating">
+                <input class="form-control" type="email" name="email" id="email" placeholder="Email" required>
+                <label class="form-label" for="email">Email</label>
+            </div>
+            <div class="form-floating">
+                <input class="form-control" type="text" name="username" id="username" placeholder="Username" required>
+                <label class="form-label" for="username">Username</label>
+            </div>
+            <div class="form-floating">
+                <input class="form-control" type="password" name="password" id="password" placeholder="Password" required>
+                <label class="form-label" for="password">Password</label>
+            </div>
         </fieldset>
-        <input type="submit" value="Register">
+        <input class="w-100 btn btn-lg btn-primary" type="submit" value="Register">
     </form>
-    <div>
-        <a href="{% url 'campusmart:login' %}">Already have an account?</a>
+    <br />
+    <div class="mt-3 justify-content-center">
+        <p>Already have an account?</p>
+        <a href="{% url 'campusmart:login' %}" class="btn btn-outline-secondary">Login</a>
     </div>
 {% endblock %}

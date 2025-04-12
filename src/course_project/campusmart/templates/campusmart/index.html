@@ -1,23 +1,14 @@
-<!-- prettier-ignore -->
 {% extends "campusmart/base.html" %} 
-
-{% load static %} 
-
-{% block title %}Index{% endblock %} 
-
 {% block content %}
+    <div
+        class="container d-flex flex-column justify-content-center align-items-center"
+        style="height: 80vh"
+    >
+        <h1 class="mb-3">Welcome to CampusMart</h1>
+        <p class="lead mb-4">Your trusted college marketplace</p>
 
-<div
-  class="container d-flex flex-column justify-content-center align-items-center"
-  style="height: 80vh"
->
-  <h1 class="mb-3">Welcome to CampusMart</h1>
-  <p class="lead mb-4">Your trusted college marketplace</p>
-
-  <a href="{% url 'campusmart:login' %}" class="btn btn-primary btn-lg">
-    Login to Start
-  </a>
-</div>
-
-<p>{{ course }} {{ semester }}</p>
+        <a href="{% url 'campusmart:login' %}" class="btn btn-primary btn-lg">
+            Login to Start
+        </a>
+    </div>
 {% endblock %}

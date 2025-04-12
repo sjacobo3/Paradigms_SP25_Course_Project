@@ -12,7 +12,7 @@ To get a local copy up and running follow these simple steps.
 
 ### Prerequisites
 * Python: install Python v3.12.7 using the link above
-* Django: install pip by following directions [here] (https://pip.pypa.io/en/stable/installation/), 
+* Django: install pip by following directions [here](https://pip.pypa.io/en/stable/installation/), 
     * then ensure pip is installed by running  
         ```sh
         pip --version

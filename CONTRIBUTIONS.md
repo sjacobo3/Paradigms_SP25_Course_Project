@@ -3,7 +3,7 @@ Project contributors
 
 * **[Samara Jacobo](https://github.com/sjacobo3)**
 
-  * Implemented Feature 3.1, which renders a preview of all the listings with the status available, making each card clickable to see a detailed view of the listing details.
+  * Implemented Feature 3.1, which renders a preview of all the listings with the status available, added on by making each card clickable to see a detailed view of the listing details.
 
 
 * **[Kaia Damian](https://github.com/kaiadamian)**

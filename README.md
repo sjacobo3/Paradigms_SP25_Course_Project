@@ -28,12 +28,8 @@ To get a local copy up and running follow these simple steps.
    ```sh
    git clone git@github.com:sjacobo3/Paradigms_SP25_Course_Project.git
    ```
-4. Apply migrations by running 
-    ```sh
-    python3 manage.py migrate
-    ```
-4. Deploy the website by running 
+3. Deploy the website by running 
     ```sh
     python3 manage.py runserver
     ```
-5. Click on the url it gives you
+4. Click on the url it gives you

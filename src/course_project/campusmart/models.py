@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 
 # Create your models here.
 class Listing(models.Model):
+    ''' This is a Listing model. '''
     CONDITION_CHOICES = [
         ('New', 'New'),
         ('Like New', 'Like New'),

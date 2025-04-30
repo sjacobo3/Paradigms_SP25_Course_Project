@@ -200,7 +200,7 @@ def listing_all(request):
     ''' This function implements Feature 3.1 View all listings '''
     # set initial variables, set up pagination for 20 products at a time
     page = int(request.GET.get('page', 1))
-    per_page = 4
+    per_page = 20
     start = (page-1) * per_page
     end = start + per_page
 
@@ -319,7 +319,7 @@ def purchase_additional_listings(request):
             return HttpResponseRedirect(reverse('campusmart:checkout'))
         
         if balance is None:
-            messages.error(request, "Failed to retrieve balance.")
+            messages.error(request, "Failed to retrieve balance - ensure your name and email are registered as a Player.")
             return HttpResponseRedirect(reverse('campusmart:checkout'))
         
         if n_coins > balance:

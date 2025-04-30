@@ -11,27 +11,52 @@
 <body>
     {% load static %}
         <!-- Navigation Bar -->
-        <nav class="navbar fixed-top text-center" style="background-color: white;">
+        <nav class="navbar navbar-expand-lg fixed-top" style="background-color: white;">
             <div class="container-fluid">
-                <img src="{% static 'campusmart/campusmart_logo.png' %}" class="logo">
-                <a href="{% url 'campusmart:create_listing' %}" class="text-lg font-semibold hover:text-gray-500">New item</a>
-                <a href="{% url 'campusmart:listing_all' %}" class="text-lg font-semibold hover:text-gray-500">Browse</a>
-                <a href="{% url 'campusmart:checkout' %}" class="text-lg font-semibold hover:text-gray-500">Purchase Listings</a>
-                
-                {% if request.user.is_authenticated %}
-                <div>
-                    <p class="nav-bar"><b>Current Logged In User: </b>{{ request.user.username }} </p>
-                    <a href="{% url 'campusmart:inbox' %}" type="button" class="btn btn-primary">Inbox</a>
-                    <a class="btn btn-outline-success my-2 my-sm-0" type="submit" href="{% url 'campusmart:logout' %}">Logout</a>
-                    
+
+                <!-- Logo to the left  -->
+                <a class="navbar-brand" href="{% url 'campusmart:listing_all' %}">
+                    <img src="{% static 'campusmart/campusmart_logo.png' %}" alt="CampusMart Logo" class="logo">
+                </a>
+
+                <!-- Toggler (Hamburger menu) for small screens -->
+                <button class="navbar-toggler" type="button" 
+                        data-bs-toggle="collapse" 
+                        data-bs-target="#navbarContent"
+                        aria-controls="navbarContent" 
+                        aria-expanded="false" 
+                        aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Content-->
+                <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
+                    <ul class="navbar-nav gap-3 align-items-lg-center">
+                        <li class="nav-item">
+                            <a class="nav-link text-lg font-semibold" href="{% url 'campusmart:create_listing' %}">New item</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-lg font-semibold" href="{% url 'campusmart:listing_all' %}">Browse</a>
+                        </li>
+                            
+                        {% if request.user.is_authenticated %}
+                            <li class="nav-item text-center">
+                                <p class="mb-1"><strong>User Logged In:</strong> {{ request.user.username }}</p>
+                                <div class="d-flex gap-2 justify-content-center">
+                                    <a href="{% url 'campusmart:inbox' %}" class="btn btn-primary btn-sm">Inbox</a>
+                                    <a href="{% url 'campusmart:logout' %}" class="btn btn-outline-danger btn-sm">Logout</a>
+                                </div>
+                            </li>
+                        {% else %}
+                            <li class="d-flex gap-2 justify-content-center">
+                                <a href="{% url 'campusmart:login' %}" class="btn btn-outline-success btn-sm">Login</a>
+                                <a href="{% url 'campusmart:register' %}" class="btn btn-outline-success btn-sm">Register</a>
+                            </li>
+                        {% endif %}
+                        </ul>
+                    </div>
                 </div>
-                {% else %}
-                <div>
-                    <a class="btn btn-outline-success my-2 my-sm-0" type="submit" href="{% url 'campusmart:login' %}">Login</a>
-                    <a class="btn btn-outline-success my-2 my-sm-0" type="submit" href="{% url 'campusmart:register' %}">Register</a>
-                </div>
-                {% endif %}
-            </div>
+
             <!-- display error or success messages with their appropriate alert color -->
             {% if messages %}
                 {% for message in messages %}
@@ -61,11 +86,11 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
             crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
             integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3"
             crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"
             integrity="sha384-mQ93GR66B00ZXjt0YO5KlohRA5SY2XofN4zfuZxLkoj1gXtW8ANNCe9d5Y3eG5eD"
-            crossorigin="anonymous"></script>
+            crossorigin="anonymous"></script> -->
 </body>
 </html>

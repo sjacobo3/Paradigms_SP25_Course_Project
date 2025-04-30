@@ -3,7 +3,7 @@
 <h1>Conversations for: {{ conversation.listing.title }}</h1>
 
 <div class="space-y-6">
-    {% for message in messages %} 
+    {% for message in conversation_messages %} 
         <div class="bg-white p-4 rounded-lg mb-4 shadow-sm">
             <strong>{{ message.created_by.username }}</strong> 
             <span class="text-gray-500 text-sm">{{ message.created_at }}</span>

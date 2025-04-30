@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.contrib.auth import authenticate as authenticate_user, login as login_user, logout as logout_user
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.db.models import Q
 from .utils.campusmart.api_helpers import view_all_coins, view_balance_for_user, user_pay
 
 ACCESS_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0NjM2NDQ5LCJpYXQiOjE3NDU5OTY0NDksImp0aSI6IjVjMjI1ZDkwODBiYjRiMmRiNzY1NzUxZWZjMzhjMmM1IiwidXNlcl9pZCI6MjV9.b3sPJZlUyHZUTlWFWpGkqorWbbBKZ4HxYZzlYT4EMQU"
@@ -205,7 +206,9 @@ def listing_all(request):
 
     query = request.GET.get('query', '') # used later for Feature 3.2
     if query:
-        listings = Listing.objects.filter(description__icontains=query)
+        listings = Listing.objects.filter(
+            Q(description__icontains=query) | Q(title__icontains=query)
+        )
     else:
             listings = Listing.objects.filter(status='Available') # this is Feature 3.1, showing all available listings
    
@@ -236,28 +239,28 @@ def conversation_new(request, listing_id):
     listing = get_object_or_404(Listing, id=listing_id)
 
     # check if conversation exists
-    conversations = Conversation.objects.filter(listing=listing).filter(members__in=[request.user.id])
-    if conversations:
-        return redirect('campusmart:inbox')      # redirect to messages page
+    conversation = Conversation.objects.filter(listing=listing, members=request.user).first()
+    if conversation:
+        return redirect('campusmart:conversation_detail', conversation_id=conversation.id)      # redirect to conversation page
 
     # create conversation, if none exist
     if request.method == 'POST':
         new_conversation = Conversation.objects.create(listing=listing)
-        new_conversation.members.add(request.user)
-        new_conversation.members.add(listing.created_by)
+        new_conversation.members.add(request.user, listing.created_by)
 
         # create message        
-        message_content = request.POST.get('message')
-        if message_content:
-            new_message = ConversationMessage.objects.create(
+        content = request.POST.get('message')
+        if content:
+            recipient = listing.created_by
+            ConversationMessage.objects.create(
                 conversation=new_conversation,
-                content=message_content,
+                content=content,
                 created_by=request.user,
+                recipient=recipient
             )
-            new_message.save()
 
         # redirect to inbox after sending message
-        return redirect('campusmart:inbox')
+        return redirect('campusmart:conversation_detail', conversation_id=new_conversation.id)
 
     return render(request, 'campusmart/conversation_new.html', {
         'listing':listing,
@@ -267,29 +270,33 @@ def conversation_new(request, listing_id):
 def conversation_detail(request, conversation_id):
     conversation = get_object_or_404(Conversation, id=conversation_id)
 
-    # get all messages for conversation
-    messages = ConversationMessage.objects.filter(conversation=conversation).order_by('created_at')
+    if request.user not in conversation.members.all():
+        return redirect('campusmart:inbox')
+
+    # get all messages for conversation, order by most recent
+    conversation_messages = conversation.messages.order_by('created_at')
 
     # if user sends message in conversation_detail
     if request.method == 'POST':
         message_content = request.POST.get('message')
         if message_content:
-            new_message = ConversationMessage.objects.create(
+            recipient = conversation.members.exclude(id=request.user.id).first()
+            ConversationMessage.objects.create(
                 conversation=conversation,
                 content=message_content,
                 created_by=request.user,
+                recipient=recipient
             )
-            new_message.save()
             return redirect('campusmart:conversation_detail', conversation_id=conversation.id)
 
     return render(request, 'campusmart/conversation_detail.html', {
         'conversation':conversation,
-        'messages':messages,
+        'conversation_messages':conversation_messages,
     })
 
 @login_required
 def inbox(request):
-    conversations = Conversation.objects.filter(members__in=[request.user.id])
+    conversations = Conversation.objects.filter(members=request.user).order_by('-created_at')
     
     return render(request, 'campusmart/inbox.html', {
         'conversations':conversations,

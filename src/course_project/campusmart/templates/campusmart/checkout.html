@@ -1,0 +1,17 @@
+{% extends "campusmart/base.html" %} 
+{% block title %}Checkout{% endblock %}
+{% block content %}
+    <h1>Checkout</h1>
+    <p>Current Balance: {{ current_balance }} Krato$Coins </p>
+    <form class="m-auto col-md-3" action="{% url 'campusmart:checkout' %}" method="post">
+        {% csrf_token %}
+        <fieldset>
+            <legend><h6>Buy Extra Listings!</h6></legend>
+            <div class="form-floating">
+                <input class="form-control" type="number" name="n_coins" id="n_coins" placeholder="Name" required>
+                <label class="form-label" for="n_coins">Number of Listings</label>
+            </div>
+        </fieldset>
+        <input class="w-100 btn btn-lg btn-primary" type="submit" value="Checkout">
+    </form>
+{% endblock %}

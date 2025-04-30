@@ -39,3 +39,12 @@ class ConversationMessage(models.Model):
     created_by = models.ForeignKey(User, related_name='sent_messages', on_delete=models.CASCADE)
     recipient = models.ForeignKey(User, related_name='received_messages', on_delete=models.CASCADE)
 
+<<<<<<< HEAD
+=======
+    def __str__(self):
+        return f"Message by {self.created_by.username} on {self.created_at}"
+    
+class Player(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    additional_listings = models.PositiveIntegerField(default=0)
+>>>>>>> 3a0d2d7a584e6adba68c152047c954e2b36d9e24

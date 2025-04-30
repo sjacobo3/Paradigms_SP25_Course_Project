@@ -1,13 +1,14 @@
 {% extends "campusmart/base.html" %} 
 {% block content %}
 
-<h1>Available items</h1>
+<h1>Catalog</h1>
 
 <!-- Search Bar -->
 <div class="container my-4">
     <form method="get" action="{% url 'campusmart:listing_all' %}">
         <div class="row g-2 align-items-end">
             <div class="col">
+
                 <input name="query" type="text" value="{{ query }}" placeholder="Search">
                 <button type="button" class="btn btn-primary">Search</button>
             </div>

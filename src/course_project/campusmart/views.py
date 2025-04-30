@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.contrib.auth import authenticate as authenticate_user, login as login_user, logout as logout_user
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.db.models import Q
 
 # Create your views here.
 def index(request):
@@ -201,7 +202,9 @@ def listing_all(request):
 
     query = request.GET.get('query', '') # used later for Feature 3.2
     if query:
-        listings = Listing.objects.filter(description__icontains=query)
+        listings = Listing.objects.filter(
+            Q(description__icontains=query) | Q(title__icontains=query)
+        )
     else:
             listings = Listing.objects.filter(status='Available') # this is Feature 3.1, showing all available listings
    

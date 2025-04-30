@@ -25,7 +25,7 @@ class Listing(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Available')
 
     def __str__(self):
-        return f"{self.title} Condition: {self.condition} Price: ${self.price}"
+        return f"Seller: {self.created_by} Item: {self.title}"
 
 class Conversation(models.Model):
     listing = models.ForeignKey(Listing, on_delete=models.CASCADE)

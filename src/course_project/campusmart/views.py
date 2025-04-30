@@ -236,7 +236,7 @@ def conversation_new(request, listing_id):
     # check if conversation exists
     conversation = Conversation.objects.filter(listing=listing, members=request.user).first()
     if conversation:
-        return redirect('campusmart:inbox')      # redirect to conversation page
+        return redirect('campusmart:conversation_detail', conversation_id=conversation.id)      # redirect to conversation page
 
     # create conversation, if none exist
     if request.method == 'POST':
@@ -244,18 +244,18 @@ def conversation_new(request, listing_id):
         new_conversation.members.add(request.user, listing.created_by)
 
         # create message        
-        message_content = request.POST.get('message')
-        if message_content:
+        content = request.POST.get('message')
+        if content:
             recipient = listing.created_by
             ConversationMessage.objects.create(
                 conversation=new_conversation,
-                content=message_content,
+                content=content,
                 created_by=request.user,
                 recipient=recipient
             )
 
         # redirect to inbox after sending message
-        return redirect('campusmart:conversation_detail', conversation.id)
+        return redirect('campusmart:conversation_detail', conversation_id=new_conversation.id)
 
     return render(request, 'campusmart/conversation_new.html', {
         'listing':listing,
@@ -270,7 +270,7 @@ def conversation_detail(request, conversation_id):
         return redirect('campusmart:inbox')
 
     # get all messages for conversation, order by most recent
-    messages = conversation.messages.order_by('created_at')
+    conversation_messages = conversation.messages.order_by('created_at')
 
     # if user sends message in conversation_detail
     if request.method == 'POST':
@@ -287,7 +287,7 @@ def conversation_detail(request, conversation_id):
 
     return render(request, 'campusmart/conversation_detail.html', {
         'conversation':conversation,
-        'messages':messages,
+        'conversation_messages':conversation_messages,
     })
 
 

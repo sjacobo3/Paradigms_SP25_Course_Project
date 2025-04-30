@@ -1,17 +1,29 @@
 {% extends "campusmart/base.html" %} 
+{% load static %}
 {% block content %}
-<h1>Inbox</h1>
 
-<div class="space-y-6">
+
+<div class="container mt-4">
+    <h1>Inbox</h1>
+    <br/>
+    <div class="row gy-4"></div>
     {% for conversation in conversations %}
-        <div class="p-6 flex bg-gray-100 rounded-xl">
-            <div class="pr-6">
-                <img src="{{ conversation.listing.image.url }}" class="w-20 rounded-xl">
+        <div class="col-12">
+            <div class="d-flex align-items-center bg-light p-3 rounded">
+            <div class="me-3">
+                {% if conversation.listing.photo %}
+                    <img src="{{ conversation.listing.photo.url }}" 
+                        class="w-full h-full object-cover rounded-xl" 
+                        alt="Listing image"
+                        style="width: 200px; height: 200px; object-fit: cover; display: block;"
+                    >
+                {% endif %}
             </div>
             <div>
                 <h3>{{ conversation.listing }}</h3>
-                <a href="{% url 'campusmart:conversation_detail' conversation.id %}" class="text-blue-600">View Conversation</a>
+                <a href="{% url 'campusmart:conversation_detail' conversation.id %}" class="btn btn-outline-dark btn-sm">View Conversation</a>
             </div>
+        </div>
         </div>
     {% endfor %}
 </div>

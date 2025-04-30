@@ -38,10 +38,10 @@
   <div class="form-floating mb-3">
     <select class="form-select" id="condition" name="condition" required>
       <option selected disabled>Select condition</option>
-      <option value="New">New</option>
-      <option value="Like New">Like New</option>
-      <option value="Used">Used</option>
-      <option value="Fair">Fair</option>
+      <option value="New" {% if listing.condition == "New" %}selected{% endif %}>New</option>
+      <option value="Like New" {% if listing.condition == "Like New" %}selected{% endif %}>Like New</option>
+      <option value="Used" {% if listing.condition == "Used" %}selected{% endif %}>Used</option>
+      <option value="Fair" {% if listing.condition == "Fair" %}selected{% endif %}>Fair</option>
     </select>
     <label for="condition">Condition</label>
   </div>
@@ -50,8 +50,8 @@
   <div class="form-floating mb-3">
     <select class="form-select" id="status" name="status" required>
       <option selected disabled>Select status</option>
-      <option value="Available">Available</option>
-      <option value="Unavailable">Unavailable</option>
+      <option value="Available" {% if listing.status == "Available" %}selected{% endif %}>Available</option>
+      <option value="Unavailable" {% if listing.status == "Unavailable" %}selected{% endif %}>Unavailable</option>
     </select>
     <label for="status">Status</label>
   </div>
@@ -64,7 +64,7 @@
 
   <div class="d-flex justify-content-between">
     <a href="{% url 'campusmart:listing_all' %}" class="btn btn-outline-secondary">← Back to Listings</a>
-    <button class="btn btn-success" type="submit">Update Listing</button>
+    <button class="btn btn-warning" type="submit">Update Listing</button>
   </div>
 </form>
 {% endblock %}

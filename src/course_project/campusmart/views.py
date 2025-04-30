@@ -200,7 +200,7 @@ def listing_all(request):
     ''' This function implements Feature 3.1 View all listings '''
     # set initial variables, set up pagination for 20 products at a time
     page = int(request.GET.get('page', 1))
-    per_page = 20
+    per_page = 4
     start = (page-1) * per_page
     end = start + per_page
 

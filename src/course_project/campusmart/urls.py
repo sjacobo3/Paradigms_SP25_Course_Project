@@ -42,6 +42,7 @@ urlpatterns = [
 
     # /campusmart/inbox/conversation_id
     path('inbox/<int:conversation_id>/', views.conversation_detail, name='conversation_detail'),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-    
+    # /campusmart/checkout
+    path('checkout/', views.purchase_additional_listings, name='checkout'),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

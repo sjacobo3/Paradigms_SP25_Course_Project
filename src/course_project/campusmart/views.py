@@ -2,12 +2,15 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from .models import Listing, Conversation, ConversationMessage
+from .models import Listing, Conversation, ConversationMessage, Player
 from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth import authenticate as authenticate_user, login as login_user, logout as logout_user
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from .utils.campusmart.api_helpers import view_all_coins, view_balance_for_user, user_pay
+
+ACCESS_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0NjM2NDQ5LCJpYXQiOjE3NDU5OTY0NDksImp0aSI6IjVjMjI1ZDkwODBiYjRiMmRiNzY1NzUxZWZjMzhjMmM1IiwidXNlcl9pZCI6MjV9.b3sPJZlUyHZUTlWFWpGkqorWbbBKZ4HxYZzlYT4EMQU"
 
 # Create your views here.
 def index(request):
@@ -42,6 +45,8 @@ def register(request):
             user.first_name = name # first_name acts as the full name, as per edstem question
             user.save()
 
+            Player.objects.create(user=user)
+
             # automatically log the user in after registration and redirect to listing page
             login_user(request, user)
             return HttpResponseRedirect(reverse('campusmart:listing_all'))
@@ -55,12 +60,10 @@ def register(request):
 
     return render(request, 'campusmart/register.html')
 
-
 def login(request):
     if request.user.is_authenticated:
         messages.error(request, f'You are already logged in as {request.user.username}. Logout first to switch account.')
         return HttpResponseRedirect(reverse('campusmart:listing_all'))
-    errors = None
     if request.method == "POST":
         uname = request.POST["username"]
         pwd = request.POST["password"]
@@ -73,12 +76,10 @@ def login(request):
             messages.error(request, "The username/password combination does not match our records.")
     return render(request, 'campusmart/login.html')
 
-
 def logout(request):
     # remove the logged-in user information
     logout_user(request)
     return HttpResponseRedirect(reverse("campusmart:index"))
-
 
 @login_required
 def create_listing(request):
@@ -113,9 +114,15 @@ def create_listing(request):
        
         # check posting limit
         daily_post_count = request.session.get("daily_post_count", 0)
+        player = request.user.player
+
         if daily_post_count >= 3:
-            messages.error(request, "You have reached your daily limit of 3 listings.")
-            return redirect("campusmart:listing_all")      # can redirect to buy more listing posts
+            if player.additional_listings > 0:
+                player.additional_listings -= 1
+                player.save()
+            else:
+                messages.error(request, "You have reached your daily limit of 3 listings.")
+                return redirect("campusmart:checkout")      # redirect to buy more listing posts
 
         # if all fields are filled, save the listing
         listing = Listing(
@@ -138,7 +145,6 @@ def create_listing(request):
     
     return render(request, "campusmart/create_listing.html")
    
-
 @login_required
 def update_listing(request, listing_id):
     listing = get_object_or_404(Listing, id=listing_id)
@@ -178,7 +184,6 @@ def update_listing(request, listing_id):
 
     return render(request, "campusmart/update_listing.html", {"listing": listing})
 
-
 @login_required
 def delete_listing(request, listing_id):
     listing = get_object_or_404(Listing, id=listing_id)
@@ -189,7 +194,6 @@ def delete_listing(request, listing_id):
         return redirect("campusmart:listing_all")
     
     return render(request, "campusmart/delete_listing.html", {"listing": listing})
-
 
 def listing_all(request):
     ''' This function implements Feature 3.1 View all listings '''
@@ -220,14 +224,12 @@ def listing_all(request):
         'page_range':page_range,
     })
 
-
 def detail(request, pk):
     listing = get_object_or_404(Listing, pk=pk)
 
     return render(request, 'campusmart/listing_detail.html', {
         'listing':listing,
     })
-
 
 @login_required
 def conversation_new(request, listing_id):
@@ -261,7 +263,6 @@ def conversation_new(request, listing_id):
         'listing':listing,
     })
 
-
 @login_required
 def conversation_detail(request, conversation_id):
     conversation = get_object_or_404(Conversation, id=conversation_id)
@@ -286,7 +287,6 @@ def conversation_detail(request, conversation_id):
         'messages':messages,
     })
 
-
 @login_required
 def inbox(request):
     conversations = Conversation.objects.filter(members__in=[request.user.id])
@@ -294,3 +294,40 @@ def inbox(request):
     return render(request, 'campusmart/inbox.html', {
         'conversations':conversations,
     })
+
+@login_required
+def purchase_additional_listings(request):
+    email = request.user.email
+    balance = view_balance_for_user(ACCESS_TOKEN, email)
+
+    if request.method == "POST":
+        try: 
+            # check to ensure the amount the user plans to pay is a non-negative integer
+            n_coins = int(request.POST.get('n_coins', 0))
+            if n_coins < 0:
+                messages.error(request, "The number of coins you pay must be a non-negative integer value.")
+                return HttpResponseRedirect(reverse('campusmart:checkout'))
+        except (TypeError, ValueError):
+            messages.error(request, "The number of coins you pay must be a non-negative integer value.")
+            return HttpResponseRedirect(reverse('campusmart:checkout'))
+        
+        if balance is None:
+            messages.error(request, "Failed to retrieve balance.")
+            return HttpResponseRedirect(reverse('campusmart:checkout'))
+        
+        if n_coins > balance:
+            messages.error(request, "Insufficient funds.")
+            return HttpResponseRedirect(reverse('campusmart:checkout'))
+        
+        pay_result = user_pay(ACCESS_TOKEN, email, amount=n_coins)
+        if pay_result and pay_result.get('message') == 'Coins decreased successfully':
+            # once payment succeeds, update the user's additional listings
+            player = request.user.player
+            player.additional_listings += n_coins
+            player.save()
+            messages.success(request, f'You have successfully purchased an additional listing(s). You can now post an extra {n_coins} products.')
+        else: 
+            messages.error(request, f"Payment failed. Please try again. {pay_result}")
+        return HttpResponseRedirect(reverse('campusmart:checkout'))
+
+    return render(request, 'campusmart/checkout.html', {'current_balance': balance})

@@ -43,3 +43,7 @@ class ConversationMessage(models.Model):
 
     def __str__(self):
         return f"Message by {self.created_by.username} on {self.created_at}"
+    
+class Player(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    additional_listings = models.PositiveIntegerField(default=0)

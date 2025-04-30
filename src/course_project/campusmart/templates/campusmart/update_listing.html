@@ -34,22 +34,24 @@
     <label for="price">Price</label>
   </div>
 
-  <!-- Condition -->
+  <!-- Condition Dropdown -->
   <div class="form-floating mb-3">
     <select class="form-select" id="condition" name="condition" required>
-      {% for value, label in CONDITION_CHOICES %}
-        <option value="{{ value }}" {% if listing.condition == value %}selected{% endif %}>{{ label }}</option>
-      {% endfor %}
+      <option selected disabled>Select condition</option>
+      <option value="New">New</option>
+      <option value="Like New">Like New</option>
+      <option value="Used">Used</option>
+      <option value="Fair">Fair</option>
     </select>
     <label for="condition">Condition</label>
   </div>
 
-  <!-- Status -->
+  <!-- Status Dropdown -->
   <div class="form-floating mb-3">
     <select class="form-select" id="status" name="status" required>
-      {% for value, label in STATUS_CHOICES %}
-        <option value="{{ value }}" {% if listing.status == value %}selected{% endif %}>{{ label }}</option>
-      {% endfor %}
+      <option selected disabled>Select status</option>
+      <option value="Available">Available</option>
+      <option value="Unavailable">Unavailable</option>
     </select>
     <label for="status">Status</label>
   </div>

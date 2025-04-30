@@ -38,6 +38,9 @@
                         <li class="nav-item">
                             <a class="nav-link text-lg font-semibold" href="{% url 'campusmart:listing_all' %}">Browse</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-lg font-semibold" href="{% url 'campusmart:checkout' %}">Purchase Listings</a>
+                        </li>
                             
                         {% if request.user.is_authenticated %}
                             <li class="nav-item text-center">

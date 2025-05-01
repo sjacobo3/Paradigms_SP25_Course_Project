@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from .utils.campusmart.api_helpers import view_all_coins, view_balance_for_user, user_pay
 
+# access token for REST API in Feature 4.1
 ACCESS_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0NjM2NDQ5LCJpYXQiOjE3NDU5OTY0NDksImp0aSI6IjVjMjI1ZDkwODBiYjRiMmRiNzY1NzUxZWZjMzhjMmM1IiwidXNlcl9pZCI6MjV9.b3sPJZlUyHZUTlWFWpGkqorWbbBKZ4HxYZzlYT4EMQU"
 
 # Create your views here.
@@ -18,6 +19,7 @@ def index(request):
     ''' This function displays the landing page (index.html). '''
     return render(request, 'campusmart/index.html')
 
+# Feature 1.1: Create new User Profile
 def register(request):
     ''' This function implements Feature 1.1: Create New User Profile '''
     # if user is already logged in, reroute them to the listing page
@@ -61,6 +63,7 @@ def register(request):
 
     return render(request, 'campusmart/register.html')
 
+# Feature 1.2: Log-in
 def login(request):
     if request.user.is_authenticated:
         messages.error(request, f'You are already logged in as {request.user.username}. Logout first to switch account.')
@@ -77,11 +80,13 @@ def login(request):
             messages.error(request, "The username/password combination does not match our records.")
     return render(request, 'campusmart/login.html')
 
+# Feature 1.3: Log-out
 def logout(request):
     # remove the logged-in user information
     logout_user(request)
     return HttpResponseRedirect(reverse("campusmart:index"))
 
+# Feature 2.1: Create Listings
 @login_required
 def create_listing(request):
     ''' This function implements Feature 2.1: Create Listings '''
@@ -146,6 +151,7 @@ def create_listing(request):
     
     return render(request, "campusmart/create_listing.html")
    
+# Feature 2.2: Update Listings
 @login_required
 def update_listing(request, listing_id):
     listing = get_object_or_404(Listing, id=listing_id)
@@ -158,7 +164,7 @@ def update_listing(request, listing_id):
         status = request.POST.get("status")
         photo = request.FILES.get("photo")  
 
-        # Validate fields
+        # validate fields
         if not all([title, description, price, condition, status]):
             messages.error(request, "All fields are required.")
             return redirect("campusmart:update_listing", listing_id=listing_id)
@@ -170,7 +176,7 @@ def update_listing(request, listing_id):
             messages.error(request, "Provide a valid price.")
             return redirect("campusmart:update_listing", listing_id=listing_id)
 
-        # Update fields
+        # update fields
         listing.title = title
         listing.description = description
         listing.price = price
@@ -185,8 +191,10 @@ def update_listing(request, listing_id):
 
     return render(request, "campusmart/update_listing.html", {"listing": listing})
 
+# Feature 2.3: Deleting Listings
 @login_required
 def delete_listing(request, listing_id):
+    # retrieve the desired listing to delete
     listing = get_object_or_404(Listing, id=listing_id)
 
     if request.method == "POST":
@@ -196,6 +204,7 @@ def delete_listing(request, listing_id):
     
     return render(request, "campusmart/delete_listing.html", {"listing": listing})
 
+# Feature 3.1: View all listings
 def listing_all(request):
     ''' This function implements Feature 3.1 View all listings '''
     # set initial variables, set up pagination for 20 products at a time
@@ -204,7 +213,8 @@ def listing_all(request):
     start = (page-1) * per_page
     end = start + per_page
 
-    query = request.GET.get('query', '') # used later for Feature 3.2
+    query = request.GET.get('query', '')
+    # Feature 3.2: Searching for Products
     if query:
         listings = Listing.objects.filter(
             Q(description__icontains=query) | Q(title__icontains=query)
@@ -227,6 +237,7 @@ def listing_all(request):
         'page_range':page_range,
     })
 
+# Detailed View of Specific Listing
 def detail(request, pk):
     listing = get_object_or_404(Listing, pk=pk)
 
@@ -234,6 +245,7 @@ def detail(request, pk):
         'listing':listing,
     })
 
+# Feature 3.3: Seller-Buyer Messaging
 @login_required
 def conversation_new(request, listing_id):
     listing = get_object_or_404(Listing, id=listing_id)
@@ -266,6 +278,7 @@ def conversation_new(request, listing_id):
         'listing':listing,
     })
 
+# Feature 3.3: Seller-Buyer Messaging
 @login_required
 def conversation_detail(request, conversation_id):
     conversation = get_object_or_404(Conversation, id=conversation_id)
@@ -294,14 +307,17 @@ def conversation_detail(request, conversation_id):
         'conversation_messages':conversation_messages,
     })
 
+# Feature 3.3: Seller-Buyer Messaging
 @login_required
 def inbox(request):
+    # display conversations, newest first
     conversations = Conversation.objects.filter(members=request.user).order_by('-created_at')
-    
+    # render the inbox
     return render(request, 'campusmart/inbox.html', {
         'conversations':conversations,
     })
 
+# Feature 4.1: Buying More Listings
 @login_required
 def purchase_additional_listings(request):
     email = request.user.email
@@ -319,10 +335,12 @@ def purchase_additional_listings(request):
             return HttpResponseRedirect(reverse('campusmart:checkout'))
         
         if balance is None:
-            messages.error(request, "Failed to retrieve balance - ensure your name and email are registered as a Player.")
+            # user is either not registered as a Player or has no coins
+            messages.error(request, "Failed to retrieve balance - ensure you are registered as a Player and that you have coins.")
             return HttpResponseRedirect(reverse('campusmart:checkout'))
         
         if n_coins > balance:
+            # check for insufficient funds
             messages.error(request, "Insufficient funds.")
             return HttpResponseRedirect(reverse('campusmart:checkout'))
         

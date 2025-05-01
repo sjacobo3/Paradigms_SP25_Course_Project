@@ -1,4 +1,5 @@
 import requests
+# FEATURE 4.1 HELPER FUNCTIONS FOR REST API REQUESTS, templates copied from project document!
 
 # global variables
 BASE_URL = "https://jcssantos.pythonanywhere.com/api/group13/group13"

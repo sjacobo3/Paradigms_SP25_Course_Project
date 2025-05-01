@@ -3,14 +3,14 @@ Project contributors
 
 * **[Samara Jacobo](https://github.com/sjacobo3)**
 
-  * Implemented Feature 3.1, which renders a preview of all the listings with the status available, added on by making each card clickable to see a detailed view of the listing details.
+  * Implemented Features 3.1-3.3, including their views.py functions as well as the html templates. Also worked on styling, Final Report, and video.
 
 
 * **[Kaia Damian](https://github.com/kaiadamian)**
 
-  * Implemented Feature 1.1, which allows the user to create a new account. Also implemented error checking to ensure all fields are filled in and that email and username are unique.
-  * Worked to merge separate branches gracefully and ensure we were following the rubric.
+  * Implemented Features 1.1-1.3 and 4.1, including their views.py functions, utils/campusmart/api_helpers.py functions, as well as the html templates. Also worked on styling, Final Report, and video.
+ 
 
 * **[Swindar Zhou](https://github.com/swindar-zhou)**
 
-  * Implemented Feature 2.1, which allows the user to create a new listing (but only 3 per day as per the rubric).
+  * Implemented Features 2.1-2.3, including their views.py functions as well as the html templates. Also worked on the Final Report and video.

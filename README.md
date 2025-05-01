@@ -36,29 +36,29 @@ To get a local copy up and running follow these simple steps.
 
 ### Organization
 * src/course_project/
-*    campusmart/
-*       migrations/: includes migrations of our app models
-*       static/campusmart/: includes campusmart logo and css stylesheet for base.html
-*       templates/campusmart/: includes all the template html files used for website rendering
-*       utils/campusmart/: includes api_helpers.py file used for API requests in Feature 4.1
-*       __init__.py
-*       admin.py
-*       apps.py
-*       models.py: includes the declaration of our models and their attributes
-*       tests.py
-*       urls.py: includes the url mappings for our app
-*       views.py: includes the view functions for our app
-*    course_project/
-*       __init__.py
-*       asgi.py
-*       settings.py: includes the settings for our project
-*       urls.py: includes the url mappings for our project
-*       wsgi.py
-*    media/listing_photos: shows all uploaded listing images
-*    db.sqlite3: the database for our project
-*    manage.py
-*    .gitignore
-*    CONTRIBUTIONS.MD
-*    Final Report.pdf: our final report
-*    README.MD
-*    requirements.txt
+* -> campusmart/
+* ->-> migrations/: includes migrations of our app models
+* ->-> static/campusmart/: includes campusmart logo and css stylesheet for base.html
+* ->-> templates/campusmart/: includes all the template html files used for website rendering
+* ->-> utils/campusmart/: includes api_helpers.py file used for API requests in Feature 4.1
+* ->-> __init__.py
+* ->-> admin.py
+* ->-> apps.py
+* ->-> models.py: includes the declaration of our models and their attributes
+* ->-> tests.py
+* ->-> urls.py: includes the url mappings for our app
+* ->-> views.py: includes the view functions for our app
+* -> course_project/
+* ->-> __init__.py
+* ->-> asgi.py
+* ->-> settings.py: includes the settings for our project
+* ->-> urls.py: includes the url mappings for our project
+* ->-> wsgi.py
+* -> media/listing_photos: shows all uploaded listing images
+* -> db.sqlite3: the database for our project
+* -> manage.py
+* -> .gitignore
+* -> CONTRIBUTIONS.MD
+* -> Final Report.pdf: our final report
+* -> README.MD
+* -> requirements.txt
